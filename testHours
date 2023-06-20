@@ -1,0 +1,51 @@
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <axis-acap/acap.h>
+
+int main(int argc, char **argv) {
+  // Initialize the ACAP library.
+  acap_init();
+
+  // Create a new application.
+  acap_application_t *app = acap_application_create("people_counting");
+
+  // Register a callback function to be called when the application starts.
+  acap_application_on_start(app, [](acap_application_t *app) {
+    // Create a new people counter.
+    acap_people_counter_t *counter = acap_people_counter_create();
+
+    // Set the camera info.
+    acap_people_counter_set_camera_info(counter, "axis-p8815-2");
+
+    // Start counting people with the camera.
+    acap_people_counter_start_with_camera(counter, "axis-p8815-2");
+
+    // Iterate over the hours of the day.
+    for (int hour = 0; hour < 24; hour++) {
+      // Get the number of people counted in the current hour.
+      int count = acap_people_counter_get_count_for_hour(counter, hour);
+
+      // Print the number of people counted in the current hour.
+      printf("Hour %d: %d people\n", hour, count);
+    }
+
+    // Stop counting people.
+    acap_people_counter_stop(counter);
+
+    // Destroy the people counter.
+    acap_people_counter_destroy(counter);
+  });
+
+  // Run the application.
+  acap_application_run(app);
+
+  // Cleanup the application.
+  acap_application_destroy(app);
+
+  // Terminate the ACAP library.
+  acap_terminate();
+
+  return 0;
+}
